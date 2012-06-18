@@ -22,20 +22,8 @@ class Configuration implements ConfigurationInterface
 
         $rootNode
               ->children()
-                  ->booleanNode('class')
+                  ->scalarNode('class')
                     ->defaultValue('Ijanki\Bundle\MailMimeDecodeBundle\Util\MailMimeDecode')
-                  ->end()
-                  ->booleanNode('decode_bodies')
-                    ->defaultValue(false)
-                  ->end()
-                  ->booleanNode('include_bodies')
-                    ->defaultValue(true)
-                  ->end()
-                  ->booleanNode('rfc822_bodies')
-                    ->defaultValue(false)
-                  ->end()
-                  ->booleanNode('decode_headers')
-                    ->defaultValue(false)
                   ->end()
               ->end();
 

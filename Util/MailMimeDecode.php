@@ -7,11 +7,6 @@ namespace Ijanki\Bundle\MailMimeDecodeBundle\Util;
  *
  * This class will parse a raw mime email and return
  * the structure.
- *  +----------------------------- IMPORTANT ------------------------------+
- *  | Usage of this class compared to native php extensions such as        |
- *  | mailparse or imap, is slow and may be feature deficient. If available|
- *  | you are STRONGLY recommended to use the php extensions.              |
- *  +----------------------------------------------------------------------+
  *
  */
 
@@ -20,7 +15,7 @@ class MailMimeDecode
     private $_input;
     private $_header;
     private $_body;
-    private $_error;
+    private $structure;
     
     /**
      * Flag to determine whether to include bodies in the
@@ -42,15 +37,12 @@ class MailMimeDecode
     
     private $_rfc822_bodies;
 
-    public function __construct($decode_bodies = false, $include_bodies = true, $rfc822_bodies = false, $decode_headers = false)
+    public function __construct($decode_bodies = true, $include_bodies = true, $rfc822_bodies = false, $decode_headers = true)
     {
         $this->_decode_bodies  = $decode_bodies;
         $this->_include_bodies = $include_bodies;
         $this->_rfc822_bodies  = $rfc822_bodies;
-        $this->_decode_headers = $decode_headers;
-        
-        var_dump($include_bodies);
-        
+        $this->_decode_headers = $decode_headers;    
     }
 
     /**
@@ -80,12 +72,83 @@ class MailMimeDecode
       $this->_header         = $header;
       $this->_body           = $body;
 
-      $structure = $this->_decode($this->_header, $this->_body);
-      if ($structure === false) {
+      $this->structure = $this->_decode($this->_header, $this->_body);
+      if ($this->structure === false) {
           throw new \Exception('Parse error');
       }
     
-      return $structure;
+      return $this->structure;
+    }
+
+    public function getSubject()
+    {
+        if (!$this->structure) throw new \Exception('You should call decode() first');
+        return trim($this->structure->headers['subject']);
+    }
+    
+    public function getCharacterSet()
+    {
+        $content_type = $this->getContentType();
+        preg_match('/charset=([0-9A-Za-z-]*)/i', $content_type, $regs);
+        return $regs[1];
+    }
+
+    public function getContentType()
+    {
+        if (!$this->structure) throw new \Exception('You should call decode() first');
+        return $this->structure->headers['content-type'];
+    }
+
+    public function getBody()
+    {
+        if ($this->structure && isset($this->structure->body)) 
+        return $this->structure->body;
+    }
+
+    public function getDate()
+    {
+        if (!$this->structure) throw new \Exception('You should call decode() first');
+        return $this->structure->headers['date'];
+    }
+    
+    public function getTo()
+    {
+        if (!$this->structure) throw new \Exception('You should call decode() first');
+        return trim($this->structure->headers['to']);
+    }
+    
+    public function getFrom()
+    {
+        if ($this->structure) 
+        return trim($this->structure->headers['from']);
+    }
+
+    public function getMessageId()
+    {
+        if ($this->structure) 
+        return trim($this->structure->headers['message-id']);
+    }
+
+    public function getAttachments($index = null)
+    {
+        if ($this->structure) {
+
+            if ($index) {
+
+                if (isset($this->structure->parts[$index - 1])) {
+                    return $this->structure->parts[$index - 1];
+                } else {
+                    foreach($this->structure->parts as $part) {
+                        if ($part->ctype_parameters['name'] == $index) 
+                            return $part;
+                    }
+                }
+            } 
+
+          return $this->structure->parts;
+        }
+
+        return array();
     }
 
     /**
@@ -99,7 +162,7 @@ class MailMimeDecode
       */
     private function _decode($headers, $body, $default_ctype = 'text/plain')
     {
-        $return = new stdClass();
+        $return = new \stdClass();
         $return->headers = array();
         $headers = $this->parseHeaders($headers);
 
