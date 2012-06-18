@@ -1,0 +1,25 @@
+{
+    "name": "ijanki/mailmimedecode-bundle",
+    "type": "symfony-bundle",
+    "description": "A Symfony2 Bundle to parse mail messages",
+    "keywords": ["mail", "mime", "decode mail", "parse mail"],
+    "homepage": "https://github.com/iJanki/MailMimeDecodeBundle",
+    "license": "MIT",
+    "authors": [
+        { 
+			"name": "Daniele Cesarini", 
+			"email": "daniele.cesarini@gmail.com"
+			"homepage": "http://www.danielecesarini.com",
+			"role": "Developer"
+		}
+    ],
+    "require": {
+        "php": ">=5.3.2",
+    },
+    "autoload": {
+        "psr-0": { 
+			"Ijanki\\Bundle\\MailMimeDecodeBundle": "" 
+		}
+    },
+    "target-dir": "Ijanki/Bundle/MailMimeDecodeBundle"
+}
