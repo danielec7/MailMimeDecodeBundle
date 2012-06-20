@@ -6,7 +6,7 @@
 ```js
 {
     "require": {
-        "ijanki/mailmimedecode-bundle": "*"
+        "ijanki/mailmimedecode-bundle": "dev-master"
     }
 }
 ```
@@ -30,3 +30,5 @@ public function registerBundles()
     );
 }
 ```
+
+WORK IN PROGRESS

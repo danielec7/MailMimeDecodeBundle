@@ -2,6 +2,9 @@
 
 namespace Ijanki\Bundle\MailMimeDecodeBundle\Util;
 
+use Ijanki\Bundle\MailMimeDecodeBundle\MailDecoderInterface;
+use Ijanki\Bundle\MailMimeDecodeBundle\Exception\BadUsageException;
+
 /**
  * This class is used to decode mail/mime messages
  *
@@ -10,7 +13,7 @@ namespace Ijanki\Bundle\MailMimeDecodeBundle\Util;
  *
  */
 
-class MailMimeDecode
+class MailMimeDecode implements MailDecoderInterface
 {
     private $_input;
     private $_header;
@@ -61,10 +64,10 @@ class MailMimeDecode
       *                               as the input
       * @return object Decoded results
       */
-    public function decode($input)
+    public function parse($input)
     {
       if (!$input)
-        throw new \Exception('No input given');
+        throw new BadUsageException('No input given');
       
       list($header, $body)   = $this->splitBodyHeader($input);
 
@@ -74,15 +77,20 @@ class MailMimeDecode
 
       $this->structure = $this->_decode($this->_header, $this->_body);
       if ($this->structure === false) {
-          throw new \Exception('Parse error');
+          throw new BadUsageException('Parse error');
       }
     
-      return $this->structure;
+    }
+
+    public function getHeaders()
+    {
+        if (!$this->structure) throw new BadUsageException('You should call decode() first');
+        return $this->structure->headers;
     }
 
     public function getSubject()
     {
-        if (!$this->structure) throw new \Exception('You should call decode() first');
+        if (!$this->structure) throw new BadUsageException('You should call decode() first');
         return trim($this->structure->headers['subject']);
     }
     
@@ -95,42 +103,46 @@ class MailMimeDecode
 
     public function getContentType()
     {
-        if (!$this->structure) throw new \Exception('You should call decode() first');
+        if (!$this->structure) throw new BadUsageException('You should call decode() first');
         return $this->structure->headers['content-type'];
     }
 
     public function getBody()
     {
-        if ($this->structure && isset($this->structure->body)) 
-        return $this->structure->body;
+        if (!$this->structure) throw new BadUsageException('You should call decode() first');
+        if (isset($this->structure->body)) 
+            return $this->structure->body;
+        return false;
     }
 
     public function getDate()
     {
-        if (!$this->structure) throw new \Exception('You should call decode() first');
+        if (!$this->structure) throw new BadUsageException('You should call decode() first');
         return $this->structure->headers['date'];
     }
     
     public function getTo()
     {
-        if (!$this->structure) throw new \Exception('You should call decode() first');
+        if (!$this->structure) throw new BadUsageException('You should call decode() first');
         return trim($this->structure->headers['to']);
     }
     
     public function getFrom()
     {
-        if ($this->structure) 
+        if (!$this->structure) throw new BadUsageException('You should call decode() first');
         return trim($this->structure->headers['from']);
     }
 
     public function getMessageId()
     {
-        if ($this->structure) 
+        if (!$this->structure) throw new BadUsageException('You should call decode() first');
         return trim($this->structure->headers['message-id']);
     }
 
     public function getAttachments($index = null)
     {
+        throw new BadUsageException('Still unimplemented');
+        /*
         if ($this->structure) {
 
             if ($index) {
@@ -149,6 +161,7 @@ class MailMimeDecode
         }
 
         return array();
+        */
     }
 
     /**
@@ -244,6 +257,7 @@ class MailMimeDecode
                 $default_ctype = (strtolower($content_type['value']) === 'multipart/digest') ? 'message/rfc822' : 'text/plain';
 
                 $parts = $this->boundarySplit($body, $content_type['other']['boundary']);
+                
                 for ($i = 0; $i < count($parts); $i++) {
                     list($part_header, $part_body) = $this->splitBodyHeader($parts[$i]);
                     $part = $this->_decode($part_header, $part_body, $default_ctype);
@@ -301,7 +315,7 @@ class MailMimeDecode
         if (count(explode("\n", $input))) {
             return array($input, '');
         }
-        throw new \Exception('Could not split header and body');
+        throw new BadUsageException('Could not split header and body');
     }
 
     /**

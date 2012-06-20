@@ -20,13 +20,6 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder();
         $rootNode = $treeBuilder->root('ijanki_mail_mime_decode');
 
-        $rootNode
-              ->children()
-                  ->scalarNode('class')
-                    ->defaultValue('Ijanki\Bundle\MailMimeDecodeBundle\Util\MailMimeDecode')
-                  ->end()
-              ->end();
-
         return $treeBuilder;
     }
 }
