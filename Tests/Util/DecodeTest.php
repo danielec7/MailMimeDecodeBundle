@@ -41,7 +41,7 @@ EOM;
         $decoder = new MailParseDecode();
         
         $decoder->parse($this->msg1);
-        echo $decoder->getBody();
+
         $this->assertEquals('Test Subject', $decoder->getSubject());
     }
 }

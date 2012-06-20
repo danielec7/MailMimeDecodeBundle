@@ -107,7 +107,7 @@ class MailParseDecode implements MailDecoderInterface
         foreach ($this->parts as $part) {
             foreach ($mime_types as $type) {
                 if ($this->getPartContentType($part) == $type) {
-                    $body = $this->decode($this->getPartBody($part), array_key_exists('content-transfer-encoding', $this->headers) ? $headers['content-transfer-encoding'] : '');
+                    $body = $this->decode($this->getPartBody($part), array_key_exists('content-transfer-encoding', $this->headers) ? $this->headers['content-transfer-encoding'] : '');
                 }
             }
         }
