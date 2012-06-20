@@ -6,4 +6,9 @@ env:
     - SYMFONY_VERSION=origin/2.0
     - SYMFONY_VERSION=origin/master
 
-before_script: php vendor/vendors.php
+before_script: 
+    - wget http://pecl.php.net/get/mailparse-2.1.6.tgz
+    - tar -xzf mailparse-2.1.6.tgz
+    - sh -c "cd mailparse-2.1.6.tgz && phpize && ./configure && make && sudo make install"
+    echo "extension=mailparse.so" >> `php --ini | grep "Loaded Configuration" | sed -e "s|.*:\s*||"`
+    - php vendor/vendors.php
