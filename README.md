@@ -8,7 +8,7 @@ it uses a pure PHP implementation inspired by Mail_mimeDecode PEAR package.
 
 There is no configuration.
 
-## Documention
+## Documentation
 
 * Read the [MailMimeDecodeBundle documentation](https://github.com/iJanki/MailMimeDecodeBundle/blob/master/Resources/doc/index.md)
 
