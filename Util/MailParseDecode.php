@@ -135,8 +135,8 @@ class MailParseDecode implements MailDecoderInterface
     
     private function getPartHeaders(&$part)
     {
-        if (isset($part['headers'][$header])) {
-            return $part['headers'][$header];
+        if (isset($part['headers'])) {
+            return $part['headers'];
         }
         return array();
     }
