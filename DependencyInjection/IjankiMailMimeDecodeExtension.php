@@ -28,7 +28,7 @@ class IjankiMailMimeDecodeExtension extends Extension
         $container->setParameter('ijanki_mail_mime_decode.class', 'Ijanki\Bundle\MailMimeDecodeBundle\Util\MailMimeDecode');
         
         if (function_exists('mailparse_msg_create')) {
-            #$container->setParameter('ijanki_mail_mime_decode.class', 'Ijanki\Bundle\MailMimeDecodeBundle\Util\MailParseDecode');
+            $container->setParameter('ijanki_mail_mime_decode.class', 'Ijanki\Bundle\MailMimeDecodeBundle\Util\MailParseDecode');
         }
     }
     

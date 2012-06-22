@@ -107,7 +107,9 @@ class MailParseDecode implements MailDecoderInterface
         foreach ($this->parts as $part) {
             foreach ($mime_types as $type) {
                 if ($this->getPartContentType($part) == $type) {
-                    $body = $this->decode($this->getPartBody($part), array_key_exists('content-transfer-encoding', $this->headers) ? $this->headers['content-transfer-encoding'] : '');
+                    $headers = $this->getPartHeaders($part);
+                    $body = $this->decode($this->getPartBody($part), array_key_exists('content-transfer-encoding', $headers) ? $headers['content-transfer-encoding'] : '');
+                    return $body;
                 }
             }
         }
@@ -131,6 +133,14 @@ class MailParseDecode implements MailDecoderInterface
         return $string;
     }
     
+    private function getPartHeaders(&$part)
+    {
+        if (isset($part['headers'][$header])) {
+            return $part['headers'][$header];
+        }
+        return array();
+    }
+
     private function getPartBody(&$part)
     {
         return substr($this->input, $part['starting-pos-body'], $part['ending-pos-body'] - $part['starting-pos-body']);

@@ -26,6 +26,7 @@ Content-Transfer-Encoding: quoted-printable
 
 Test message.
 Second Line.
+
 EOM;
     
     public function testPhpDecode()
@@ -34,14 +35,14 @@ EOM;
         $decoder->parse($this->msg1);
         
         $this->assertEquals('Test Subject', $decoder->getSubject());
+        $this->assertEquals("Test message.\nSecond Line.\n", $decoder->getBody());
     }
     
     public function testPeclDecode()
     {
         $decoder = new MailParseDecode();
-        
         $decoder->parse($this->msg1);
-
         $this->assertEquals('Test Subject', $decoder->getSubject());
+        $this->assertEquals("Test message.\nSecond Line.\n", $decoder->getBody());
     }
 }
