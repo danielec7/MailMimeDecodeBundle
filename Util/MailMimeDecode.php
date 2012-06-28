@@ -19,25 +19,25 @@ class MailMimeDecode implements MailDecoderInterface
     private $_header;
     private $_body;
     private $structure;
-    
+
     /**
      * Flag to determine whether to include bodies in the
      * returned object.
      *
-     */ 
+     */
     private $_include_bodies;
-    
+
     /**
      * Flag to determine whether to decode bodies
      *
      */
     private $_decode_bodies;
-    
+
     /**
      * Flag to determine whether to decode headers
      */
     private $_decode_headers;
-    
+
     private $_rfc822_bodies;
 
     public function __construct($decode_bodies = true, $include_bodies = true, $rfc822_bodies = false, $decode_headers = true)
@@ -45,7 +45,7 @@ class MailMimeDecode implements MailDecoderInterface
         $this->_decode_bodies  = $decode_bodies;
         $this->_include_bodies = $include_bodies;
         $this->_rfc822_bodies  = $rfc822_bodies;
-        $this->_decode_headers = $decode_headers;    
+        $this->_decode_headers = $decode_headers;
     }
 
     /**
@@ -68,7 +68,7 @@ class MailMimeDecode implements MailDecoderInterface
     {
       if (!$input)
         throw new BadUsageException('No input given');
-      
+
       list($header, $body)   = $this->splitBodyHeader($input);
 
       $this->_input          = $input;
@@ -79,38 +79,43 @@ class MailMimeDecode implements MailDecoderInterface
       if ($this->structure === false) {
           throw new BadUsageException('Parse error');
       }
-    
+
     }
 
     public function getHeaders()
     {
         if (!$this->structure) throw new BadUsageException('You should call decode() first');
+
         return $this->structure->headers;
     }
 
     public function getSubject()
     {
         if (!$this->structure) throw new BadUsageException('You should call decode() first');
+
         return trim($this->structure->headers['subject']);
     }
-    
+
     public function getCharacterSet()
     {
         $content_type = $this->getContentType();
         preg_match('/charset=([0-9A-Za-z-]*)/i', $content_type, $regs);
+
         return $regs[1];
     }
 
     public function getContentType()
     {
         if (!$this->structure) throw new BadUsageException('You should call decode() first');
+
         return $this->structure->headers['content-type'];
     }
 
     public function getBody()
     {
         if (!$this->structure) throw new BadUsageException('You should call decode() first');
-        if (isset($this->structure->body)) 
+        if (isset($this->structure->body))
+
             return $this->structure->body;
         return false;
     }
@@ -118,24 +123,28 @@ class MailMimeDecode implements MailDecoderInterface
     public function getDate()
     {
         if (!$this->structure) throw new BadUsageException('You should call decode() first');
+
         return $this->structure->headers['date'];
     }
-    
+
     public function getTo()
     {
         if (!$this->structure) throw new BadUsageException('You should call decode() first');
+
         return trim($this->structure->headers['to']);
     }
-    
+
     public function getFrom()
     {
         if (!$this->structure) throw new BadUsageException('You should call decode() first');
+
         return trim($this->structure->headers['from']);
     }
 
     public function getMessageId()
     {
         if (!$this->structure) throw new BadUsageException('You should call decode() first');
+
         return trim($this->structure->headers['message-id']);
     }
 
@@ -150,12 +159,13 @@ class MailMimeDecode implements MailDecoderInterface
                 if (isset($this->structure->parts[$index - 1])) {
                     return $this->structure->parts[$index - 1];
                 } else {
-                    foreach($this->structure->parts as $part) {
-                        if ($part->ctype_parameters['name'] == $index) 
+                    foreach ($this->structure->parts as $part) {
+                        if ($part->ctype_parameters['name'] == $index)
+
                             return $part;
                     }
                 }
-            } 
+            }
 
           return $this->structure->parts;
         }
@@ -195,7 +205,7 @@ class MailMimeDecode implements MailDecoderInterface
 
         foreach ($headers as $key => $value) {
             $headers[$key]['name'] = strtolower($headers[$key]['name']);
-            
+
             switch ($headers[$key]['name']) {
                 case 'content-type':
                     $content_type = $this->parseHeaderValue($headers[$key]['value']);
@@ -206,7 +216,7 @@ class MailMimeDecode implements MailDecoderInterface
                     }
 
                     if (isset($content_type['other'])) {
-                        foreach($content_type['other'] as $p_name => $p_value) {
+                        foreach ($content_type['other'] as $p_name => $p_value) {
                             $return->ctype_parameters[$p_name] = $p_value;
                         }
                     }
@@ -216,7 +226,7 @@ class MailMimeDecode implements MailDecoderInterface
                     $content_disposition = $this->parseHeaderValue($headers[$key]['value']);
                     $return->disposition   = $content_disposition['value'];
                     if (isset($content_disposition['other'])) {
-                        foreach($content_disposition['other'] as $p_name => $p_value) {
+                        foreach ($content_disposition['other'] as $p_name => $p_value) {
                             $return->d_parameters[$p_name] = $p_value;
                         }
                     }
@@ -249,15 +259,16 @@ class MailMimeDecode implements MailDecoderInterface
                 case 'multipart/related':
                 case 'multipart/mixed':
                 case 'application/vnd.wap.multipart.related':
-                if (!isset($content_type['other']['boundary'])){
+                if (!isset($content_type['other']['boundary'])) {
                     $this->_error = 'No boundary found for ' . $content_type['value'] . ' part';
+
                     return false;
                 }
 
                 $default_ctype = (strtolower($content_type['value']) === 'multipart/digest') ? 'message/rfc822' : 'text/plain';
 
                 $parts = $this->boundarySplit($body, $content_type['other']['boundary']);
-                
+
                 for ($i = 0; $i < count($parts); $i++) {
                     list($part_header, $part_body) = $this->splitBodyHeader($parts[$i]);
                     $part = $this->_decode($part_header, $part_body, $default_ctype);
@@ -268,14 +279,14 @@ class MailMimeDecode implements MailDecoderInterface
                 break;
 
                 case 'message/rfc822':
-    				if ($this->_rfc822_bodies) {
-    					$encoding = isset($content_transfer_encoding) ? $content_transfer_encoding['value'] : '7bit';
-    					$return->body = ($this->_decode_bodies ? $this->decodeBody($body, $encoding) : $body);
-    				}
+                    if ($this->_rfc822_bodies) {
+                        $encoding = isset($content_transfer_encoding) ? $content_transfer_encoding['value'] : '7bit';
+                        $return->body = ($this->_decode_bodies ? $this->decodeBody($body, $encoding) : $body);
+                    }
                     $obj = new Mail_mimeDecode($body);
                     $return->parts[] = $obj->decode(array('include_bodies' => $this->_include_bodies,
-    				                                      'decode_bodies'  => $this->_decode_bodies,
-    													  'decode_headers' => $this->_decode_headers));
+                                                          'decode_bodies'  => $this->_decode_bodies,
+                                                          'decode_headers' => $this->_decode_headers));
                     unset($obj);
                     break;
 
@@ -296,7 +307,6 @@ class MailMimeDecode implements MailDecoderInterface
         return $return;
     }
 
-        
     /**
       * Given a string containing a header and body
       * section, this function will split them (at the first
@@ -310,7 +320,7 @@ class MailMimeDecode implements MailDecoderInterface
         if (preg_match("/^(.*?)\r?\n\r?\n(.*)/s", $input, $match)) {
             return array($match[1], $match[2]);
         }
-        // empty bodies are allowed. - we just check that at least one line 
+        // empty bodies are allowed. - we just check that at least one line
         // of headers exist..
         if (count(explode("\n", $input))) {
             return array($input, '');
@@ -331,7 +341,7 @@ class MailMimeDecode implements MailDecoderInterface
             // Unfold the input
             $input   = preg_replace("/\r?\n/", "\r\n", $input);
             // wrapping.. with encoded stuff.. - probably not needed,
-            // wrapping space should only get removed if the trailing item on previous line is a 
+            // wrapping space should only get removed if the trailing item on previous line is a
             // encoded character
             $input   = preg_replace("/=\r\n(\t| )+/", '=', $input);
             $input   = preg_replace("/\r\n(\t| )+/", ' ', $input);
@@ -352,6 +362,7 @@ class MailMimeDecode implements MailDecoderInterface
         } else {
                 $return = array();
         }
+
         return $return;
     }
 
@@ -370,6 +381,7 @@ class MailMimeDecode implements MailDecoderInterface
         if (($pos = strpos($input, ';')) === false) {
             $input = $this->_decode_headers ? $this->decodeHeader($input) : $input;
             $return['value'] = trim($input);
+
             return $return;
         }
 
@@ -403,7 +415,7 @@ class MailMimeDecode implements MailDecoderInterface
                 }
                 $escaped = true;
                 $c = $input[$i];
-            }            
+            }
 
             // state - in key..
             if ($val === false) {
@@ -513,7 +525,7 @@ class MailMimeDecode implements MailDecoderInterface
             }
         }
         // decode values.
-        foreach($return['other'] as $key =>$val) {
+        foreach ($return['other'] as $key =>$val) {
             $return['other'][$key] = $this->_decode_headers ? $this->decodeHeader($val) : $val;
         }
            //print_r($return);
@@ -550,6 +562,7 @@ class MailMimeDecode implements MailDecoderInterface
         if (!empty($tmp[$len]) && strlen(trim($tmp[$len])) && $tmp[$len][0] != '-') {
             $parts[] = $tmp[$len];
         }
+
         return $parts;
     }
 
@@ -635,7 +648,7 @@ class MailMimeDecode implements MailDecoderInterface
         $input = preg_replace("/=\r?\n/", '', $input);
 
         // Replace encoded characters
-    	$input = preg_replace('/=([a-f0-9]{2})/ie', "chr(hexdec('\\1'))", $input);
+        $input = preg_replace('/=([a-f0-9]{2})/ie', "chr(hexdec('\\1'))", $input);
 
         return $input;
     }
@@ -671,7 +684,7 @@ class MailMimeDecode implements MailDecoderInterface
             for ($i = 0; $i < $strlen; $i++) {
                 $pos = 1;
                 $d = 0;
-                $len = (int)(((ord(substr($str[$i],0,1)) -32) - ' ') & 077);
+                $len = (int) (((ord(substr($str[$i],0,1)) -32) - ' ') & 077);
 
                 while (($d + 3 <= $len) && ($pos + 4 <= strlen($str[$i]))) {
                     $c0 = (ord(substr($str[$i],$pos,1)) ^ 0x20);

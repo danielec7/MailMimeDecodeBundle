@@ -28,16 +28,16 @@ Test message.
 Second Line.
 
 EOM;
-    
+
     public function testPhpDecode()
     {
         $decoder = new MailMimeDecode();
         $decoder->parse($this->msg1);
-        
+
         $this->assertEquals('Test Subject', $decoder->getSubject());
         $this->assertEquals("Test message.\nSecond Line.\n", $decoder->getBody());
     }
-    
+
     public function testPeclDecode()
     {
         $decoder = new MailParseDecode();

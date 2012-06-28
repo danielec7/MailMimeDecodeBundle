@@ -24,14 +24,14 @@ class IjankiMailMimeDecodeExtension extends Extension
 
         $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');
-        
+
         $container->setParameter('ijanki_mail_mime_decode.class', 'Ijanki\Bundle\MailMimeDecodeBundle\Util\MailMimeDecode');
-        
+
         if (function_exists('mailparse_msg_create')) {
             $container->setParameter('ijanki_mail_mime_decode.class', 'Ijanki\Bundle\MailMimeDecodeBundle\Util\MailParseDecode');
         }
     }
-    
+
     public function getAlias()
     {
         return 'ijanki_mail_mime_decode';
